@@ -3,16 +3,23 @@ using System.IO;
 using System.Xml;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Newtonsoft.Json;
 
 namespace FunctionApp1
 {
+    [StorageAccount("AzureWebJobsStorage")]
     public static class Function1
     {
         [FunctionName("Function1")]
-        public static void Run([BlobTrigger("tobeprocess/{name}", Connection = "AzureWebJobsStorage")]
+        [return: Queue("queueprocess")]
+        public static string Run([BlobTrigger("tobeprocess/{name}", Connection = "AzureWebJobsStorage")]
         Stream myBlob, string name, TraceWriter log)
         {
             log.Info($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
+
+            var currentDoc = ProcessDocument(myBlob, name);
+
+            return JsonConvert.SerializeObject(currentDoc);
         }
 
         private static DocFile ProcessDocument(Stream blob, string name)
