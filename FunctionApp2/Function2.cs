@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace FunctionApp2
@@ -10,9 +11,11 @@ namespace FunctionApp2
     public static class Function2
     {
         [FunctionName("Function2")]
-        public static async Task Run([QueueTrigger("queueprocess", Connection = "AzureWebJobsStorage")] string myQueueItem, TraceWriter log)
+        [return: Table("docsinfo", Connection = "AzureWebJobsStorage")]
+        public static async Task<DocEntity> Run([QueueTrigger("queueprocess", Connection = "AzureWebJobsStorage")] 
+        string myQueueItem, ILogger log)
         {
-            log.Info($"C# Queue trigger function processed: {myQueueItem}");
+            log.LogInformation($"C# Queue trigger function processed: {myQueueItem}");
 
             var queueItem = JsonConvert.DeserializeObject<DocFile>(myQueueItem);
 
@@ -24,6 +27,14 @@ namespace FunctionApp2
                                                               "processdone");
             await blobContainerClient.UploadBlobAsync(queueItem.FileName, currentBlob.Value.Content);
             await blobClient.DeleteIfExistsAsync();
+
+            return new()
+            {
+                PartitionKey = "nota_fiscal",
+                RowKey = Guid.NewGuid().ToString(),
+                PersonId = queueItem.PersonId,
+                PersonName = queueItem.PersonName,
+            };
         }
     }
 }
