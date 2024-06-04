@@ -11,25 +11,14 @@ using Newtonsoft.Json.Linq;
 
 namespace DurableFunction
 {
-    public class FunctionCommercial
+    public class FunctionCommercial : BlobServiceBase
     {
         private readonly IContainerService _containerService;
 
-        public FunctionCommercial(IContainerService containerService)
-        {
-            _containerService = containerService ?? throw new ArgumentException(nameof(FunctionCommercial));
-        }
+        public FunctionCommercial(IContainerService containerService) 
+            : base(containerService, Global.COMMERCIAL_CONTAINER) { }
 
         [FunctionName(nameof(FunctionCommercial))]
-        public Task<string> Run([ActivityTrigger] string name, ILogger log)
-        {
-            log.LogInformation("Saying hello to {name}.", name);
-
-            var blobResult = _containerService.GetBlobs(Global.COMMERCIAL_CONTAINER);
-
-            log.LogInformation($"Found: {blobResult}");
-
-            return Task.FromResult($"Hello {name}!");
-        }
+        public Task<ContainerResponse> Run([ActivityTrigger] string name) => Task.FromResult(Execute());
     }
 }

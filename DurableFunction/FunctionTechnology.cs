@@ -11,25 +11,16 @@ using Newtonsoft.Json.Linq;
 
 namespace DurableFunction
 {
-    public class FunctionTechnology
+    public class FunctionTechnology : BlobServiceBase
     {
         private readonly IContainerService _containerService;
 
         public FunctionTechnology(IContainerService containerService)
-        {
-            _containerService = containerService ?? throw new ArgumentException(nameof(FunctionTechnology));
-        }
+            : base(containerService, Global.TECHNOLOGY_CONTAINER) { }
+        
 
         [FunctionName(nameof(FunctionTechnology))]
-        public Task<string> Run([ActivityTrigger] string name, ILogger log)
-        {
-            log.LogInformation("Saying hello to {name}.", name);
-
-            var blobResult = _containerService.GetBlobs(Global.TECHNOLOGY_CONTAINER);
-
-            log.LogInformation($"Found: {blobResult}");
-
-            return Task.FromResult($"Hello {name}!");
-        }
+        public Task<ContainerResponse> Run([ActivityTrigger] string name) => Task.FromResult(Execute());
+        
     }
 }

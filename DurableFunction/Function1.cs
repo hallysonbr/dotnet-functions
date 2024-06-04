@@ -10,17 +10,17 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableFunction
 {
-    public static class Function1
+    public class Function1
     {
         [FunctionName("Function1")]
-        public static async Task<List<string>> RunOrchestrator(
+        public async Task RunOrchestrator(
             [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
-            var tasks = new List<Task<string>>
+            var tasks = new List<Task<ContainerResponse>>
             {
-                context.CallActivityAsync<string>(nameof(FunctionTechnology), "FunctionTechnology"),
-                context.CallActivityAsync<string>(nameof(FunctionCommercial), "FunctionCommercial"),
-                context.CallActivityAsync<string>(nameof(FunctionEngineering), "FunctionEngineering")
+                context.CallActivityAsync<ContainerResponse>(nameof(FunctionTechnology), "FunctionTechnology"),
+                context.CallActivityAsync<ContainerResponse>(nameof(FunctionCommercial), "FunctionCommercial"),
+                context.CallActivityAsync<ContainerResponse>(nameof(FunctionEngineering), "FunctionEngineering")
             };
 
             await Task.WhenAll(tasks);
@@ -28,12 +28,10 @@ namespace DurableFunction
             var resultFromFunctions = tasks.Select(x => x.Result).ToList();
 
             await context.CallActivityAsync<string>(nameof(FunctionConclusion), resultFromFunctions);
-
-            return null;
         }
 
         [FunctionName("Function1_HttpStart")]
-        public static async Task<HttpResponseMessage> HttpStart(
+        public async Task<HttpResponseMessage> HttpStart(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
             [DurableClient] IDurableOrchestrationClient starter,
             ILogger log)
