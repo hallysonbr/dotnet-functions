@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
@@ -24,14 +25,11 @@ namespace DurableFunction
 
             await Task.WhenAll(tasks);
 
-            return null;
-        }
+            var resultFromFunctions = tasks.Select(x => x.Result).ToList();
 
-        [FunctionName(nameof(SayHello))]
-        public static string SayHello([ActivityTrigger] string name, ILogger log)
-        {
-            log.LogInformation("Saying hello to {name}.", name);
-            return $"Hello {name}!";
+            await context.CallActivityAsync<string>(nameof(FunctionConclusion), resultFromFunctions);
+
+            return null;
         }
 
         [FunctionName("Function1_HttpStart")]
