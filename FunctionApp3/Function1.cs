@@ -14,7 +14,7 @@ namespace FunctionApp3
     public static class Function1
     {
         [FunctionName("Function1")]
-        [return: EventHub("logapim", Connection = "AzureWebJobsStorage")]
+        [return: EventHub("logapim", Connection = "EventHubConnectionString")]
         public static async Task<string> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "Logger")] HttpRequestMessage req,
             ILogger log)

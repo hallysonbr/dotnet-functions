@@ -15,10 +15,12 @@ namespace FunctionApp3
     public static class LoggerOrchestrator
     {
         [FunctionName("LoggerOrchestrator")]
-        public static async Task Run([EventHubTrigger("logapim", Connection = "AzureWebJobsStorage")] EventData[] events, ILogger log,
-            [EventHub("logapim400", Connection = "AzureWebJobsStorage")] IAsyncCollector<ApimLoggerData> output400,
-            [EventHub("logapim500", Connection = "AzureWebJobsStorage")] IAsyncCollector<ApimLoggerData> output500)
+        public static async Task Run([EventHubTrigger("logapim", Connection = "EventHubConnectionString")] EventData[] events, ILogger log,
+            [EventHub("logapim400", Connection = "EventHubConnectionString")] IAsyncCollector<ApimLoggerData> output400,
+            [EventHub("logapim500", Connection = "EventHubConnectionString")] IAsyncCollector<ApimLoggerData> output500)
         {
+            log.LogInformation($"STEP: {nameof(LoggerOrchestrator)}");
+
             var exceptions = new List<Exception>();
 
             foreach (EventData eventData in events)
